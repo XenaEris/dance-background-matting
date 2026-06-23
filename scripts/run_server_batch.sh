@@ -33,9 +33,15 @@ for i in 1 2 3 4 5; do
   mask="output/task${i}_mask.mp4"
   work_root="work/task${i}_sam2_large"
   log="logs/task${i}.log"
+  prompts="configs/prompts/task${i}_sam2_points.json"
 
   if [[ ! -f "$human" ]]; then
     echo "missing input: $human" >&2
+    exit 1
+  fi
+
+  if [[ ! -f "$prompts" ]]; then
+    echo "missing prompts: $prompts" >&2
     exit 1
   fi
 
@@ -43,6 +49,7 @@ for i in 1 2 3 4 5; do
   python scripts/run_sam2_pipeline.py \
     --human "$human" \
     --background input/bg.mp4 \
+    --prompts "$prompts" \
     --output "$output" \
     --output-mask "$mask" \
     --work-root "$work_root" \
