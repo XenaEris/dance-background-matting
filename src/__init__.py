@@ -1,0 +1,2 @@
+"""Video matting demo package."""
+

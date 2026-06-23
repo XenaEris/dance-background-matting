@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+work/
+outputs/*.mp4
+outputs/*.jpg
+_inspect_frames/
+
