@@ -23,6 +23,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-alpha-dir", default="work/sam2_alpha", help="Directory for alpha npy files.")
     parser.add_argument("--work-dir", default="work/sam2_frames", help="Temporary frame directory.")
     parser.add_argument("--model-id", default="facebook/sam2-hiera-large", help="SAM2 Hugging Face model id.")
+    parser.add_argument("--checkpoint", help="Local SAM2 checkpoint path. If set, skips Hugging Face download.")
+    parser.add_argument("--model-config", default="configs/sam2.1/sam2.1_hiera_l.yaml")
     parser.add_argument("--max-seconds", type=float, default=10.0)
     parser.add_argument("--refine", action="store_true", help="Apply alpha refinement to masks.")
     parser.add_argument("--refine-mode", choices=["guided", "edge-band"], default="guided")
@@ -56,8 +58,11 @@ def main() -> None:
     if not frame_paths:
         raise RuntimeError("No frames were extracted.")
 
-    print(f"loading SAM2 model: {args.model_id}")
-    predictor = _load_sam2_predictor(args.model_id)
+    if args.checkpoint:
+        print(f"loading SAM2 model from checkpoint: {args.checkpoint}")
+    else:
+        print(f"loading SAM2 model: {args.model_id}")
+    predictor = _load_sam2_predictor(args.model_id, args.checkpoint, args.model_config)
 
     import torch
 
@@ -103,11 +108,16 @@ def main() -> None:
     print(f"wrote {mask_video.resolve()}")
 
 
-def _load_sam2_predictor(model_id: str):
+def _load_sam2_predictor(model_id: str, checkpoint: str | None, model_config: str):
     try:
         from sam2.sam2_video_predictor import SAM2VideoPredictor
     except ImportError as exc:
         raise RuntimeError("SAM2 is not installed. Install it before running this experiment.") from exc
+
+    if checkpoint:
+        from sam2.build_sam import build_sam2_video_predictor
+
+        return build_sam2_video_predictor(model_config, checkpoint)
 
     return SAM2VideoPredictor.from_pretrained(model_id)
 

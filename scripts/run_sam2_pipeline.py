@@ -16,6 +16,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--work-root", default="work/sam2_pipeline")
     parser.add_argument("--max-seconds", type=float, default=6.0)
     parser.add_argument("--model-id", default="facebook/sam2-hiera-large")
+    parser.add_argument("--checkpoint", help="Local SAM2 checkpoint path. If set, skips Hugging Face download.")
+    parser.add_argument("--model-config", default="configs/sam2.1/sam2.1_hiera_l.yaml")
     parser.add_argument("--no-refine", action="store_true", help="Disable guided-filter refinement.")
     parser.add_argument("--refine-mode", choices=["guided", "edge-band"], default="edge-band")
     parser.add_argument("--guided-radius", type=int, default=8)
@@ -55,6 +57,8 @@ def main() -> None:
         str(frame_dir),
         "--model-id",
         args.model_id,
+        "--model-config",
+        args.model_config,
         "--max-seconds",
         str(args.max_seconds),
         "--guided-radius",
@@ -68,6 +72,8 @@ def main() -> None:
         "--edge-dilate",
         str(args.edge_dilate),
     ]
+    if args.checkpoint:
+        run_mask_cmd.extend(["--checkpoint", args.checkpoint])
     if not args.no_refine:
         run_mask_cmd.append("--refine")
 
